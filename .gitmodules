@@ -1,3 +1,15 @@
 [submodule "packages/unofficial"]
 	path = packages/unofficial
 	url = https://github.com/OpenELEC/unofficial-addons.git
+[submodule "projects/Odroid_C2"]
+	path = projects/Odroid_C2
+	url = https://github.com/zalaare/Project-Odroid-C2.git
+[submodule "projects/Odroid_C1"]
+	path = projects/Odroid_C1
+	url = https://github.com/zalaare/Project-Odroid-C1.git
+[submodule "projects/Odroid_XU3"]
+	path = projects/Odroid_XU3
+	url = https://github.com/zalaare/Project-Odroid-XU3.git
+[submodule "projects/Odroid_U2"]
+	path = projects/Odroid_U2
+	url = https://github.com/zalaare/Project-Odroid-U2.git
