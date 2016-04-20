@@ -18,6 +18,10 @@
 #  along with OpenELEC.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
+. /usr/lib/libreelec/functions
+
+hidecursor
+
 get_hddinfo() {
   for arg in $(cat /proc/cmdline); do
     case $arg in
@@ -54,7 +58,7 @@ if [ -f /storage/.cache/reset_oe ] ; then
   rm -f /storage/.cache/reset_oe
   get_hddinfo
   if [ ! -z $part ] ; then
-    echo "hard resetting..."
+    StartProgress spinner "Resetting System (hard)..."
     # get storage partition start
     part_start=$(parted -s -m $disk unit b print |grep -v ^/dev |grep -v BYT | grep ^2: |  cut -f2 -d ":")
     # failed to get partition start offset ?
@@ -71,19 +75,15 @@ if [ -f /storage/.cache/reset_oe ] ; then
         tune2fs -U $uuid $part 2>&1 >/dev/null
       fi
     fi
-    echo "done"
-    sleep 5
   fi
 elif [ -f /storage/.cache/reset_xbmc ] ; then
   # soft reset
   rm -f /storage/.cache/reset_xbmc
   get_hddinfo
   if [ ! -z $part ] ; then
-    echo "soft resetting..."
-    rm -rf /storage/.??* 2>&1 >/dev/null
-    echo "done"
-    sleep 5
+    StartProgress spinner "Resetting System (soft)..." "rm -rf /storage/.??* 2>&1 >/dev/null"
   fi
 fi
 sync
+StartProgress countdown "Rebooting in " "5"
 reboot -f
