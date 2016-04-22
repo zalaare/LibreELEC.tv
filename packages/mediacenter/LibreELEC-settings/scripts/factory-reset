@@ -45,10 +45,12 @@ get_hddinfo() {
   done
   case $part in
     /dev/mmcblk*)
-      disk="${part%p2}"
+      part_num="${part#*mmcblk*p}"
+      disk="${part%p${part_num}}"
       ;;
     *)
-      disk="${part%2}"
+      part_num="${part//[!0-9]/}"
+      disk="${part%${part_num}}"
       ;;
   esac
 }
@@ -60,12 +62,12 @@ if [ -f /storage/.cache/reset_oe ] ; then
   if [ ! -z $part ] ; then
     StartProgress spinner "Resetting System (hard)..."
     # get storage partition start
-    part_start=$(parted -s -m $disk unit b print |grep -v ^/dev |grep -v BYT | grep ^2: |  cut -f2 -d ":")
+    part_start=$(parted -s -m $disk unit b print |grep -v ^/dev |grep -v BYT | grep ^$part_num: |  cut -f2 -d ":")
     # failed to get partition start offset ?
     if [ -n "$part_start" ] ; then
       umount $part
 
-      parted -s -m $disk rm 2 2>&1 >/dev/null
+      parted -s -m $disk rm $part_num 2>&1 >/dev/null
       parted -s -m $disk unit b mkpart primary $part_start 100% 2>&1 >/dev/null
       mke2fs -F -t ext4 -m 0 $part 2>&1 >/dev/null
       if [ ! -z $label ] ; then
