@@ -30,4 +30,12 @@ PKG_SHORTDESC="libxfixes: X Fixes Library"
 PKG_LONGDESC="X Fixes Library"
 PKG_BUILD_FLAGS="+pic"
 
-PKG_CONFIGURE_OPTS_TARGET="--enable-static --disable-shared"
+if [[ "$PROJECT" =~ Exynos* ]]; then
+  PKG_CONFIGURE_OPTS_TARGET="--enable-shared --enable-static"
+else
+  PKG_CONFIGURE_OPTS_TARGET="--enable-static --disable-shared"
+fi
+
+pre_configure_target() {
+  export CFLAGS="$CFLAGS -fPIC"
+}
