@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+
+# copy u-boot blob
+  cp -a u-boot-dtb.bin $INSTALL/usr/share/bootloader/u-boot.img
+
+# generate a new MAC
+  find_file_path bootloader/boot.ini.in && \
+    ( MAC=$(openssl rand -hex 3 | sed 's,\(..\),\1:,g;s,.$,,'); sed -e "s/@MAC@/${MAC}/" ${FOUND_PATH} > $INSTALL/usr/share/boot.ini )

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+
+mkdir -p $RELEASE_DIR/3rdparty/bootloader
+
+  case $UBOOT_SYSTEM in
+    odroid_*) cp -a $(get_build_dir $BOOTLOADER)/u-boot-dtb.bin $RELEASE_DIR/3rdparty/bootloader/
+              cp -a $(get_build_dir hk-bootloader)/* $RELEASE_DIR/3rdparty/bootloader/
+              cp -a $(get_build_dir linux)/arch/$TARGET_KERNEL_ARCH/boot/dts/*.dtb $RELEASE_DIR/3rdparty/bootloader/
+              ;;
+  esac

@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2016-present Team LibreELEC (https://libreelec.tv)
+
+TOPDIR=$(pwd)
+GIT_FLAGS="${GIT_FLAGS:=-q}"
+GIT_REPO="git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
+GIT_NAME="linux-firmware.git"
+PKG_NAME="exynos-firmware"
+
+sources() {
+  echo -n "Getting Sources ... "
+
+  cd $TOPDIR
+
+  if [ ! -d "$GIT_NAME" ]; then
+    git clone $GIT_FLAGS $GIT_REPO $GIT_NAME
+  fi
+
+  cd $TOPDIR/$GIT_NAME
+
+  git reset $GIT_FLAGS --hard
+  git clean $GIT_FLAGS -fd
+  git pull $GIT_FLAGS
+
+  VERSION="$(date +%Y%m%d).$(git rev-parse --short HEAD)"
+
+  echo "DONE"
+}
+
+package() {
+  cd $TOPDIR
+
+  if [ -d $PKG_NAME-$VERSION ]; then
+    echo -n "Cleaning Old Release ... "
+    rm -rf $PKG_NAME-$VERSION
+    echo "DONE"
+  fi
+
+  echo -n "Copying GIT to Release ... "
+  mkdir -p $PKG_NAME-$VERSION
+  cp -PR $GIT_NAME/s5* $PKG_NAME-$VERSION
+  echo "DONE"
+
+  echo -n "Compressing Source ... "
+  tar cJf $PKG_NAME-$VERSION.tar.xz $PKG_NAME-$VERSION
+  echo "DONE"
+
+  echo -n "Final Cleanup ... "
+  rm -rf $PKG_NAME-$VERSION
+  echo "DONE"
+}
+
+sources
+package

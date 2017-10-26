@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2016-present Team LibreELEC (https://libreelec.tv)
+
+TOPDIR=$(pwd)
+PKG_NAME="mali-t62x"
+PKG_MALI_VERSION="r12p0"
+PKG_MALI_RELEASE="04rel0"
+PKG_MALI_URI="https://developer.arm.com/-/media/Files/downloads/mali-drivers/user-space/odroid-xu3"
+PKG_MALI_URL="${PKG_MALI_URI}/malit62x${PKG_MALI_VERSION}${PKG_MALI_RELEASE}linux1wayland.tar.gz"
+PKG_MESA_VERSION="$(grep ^PKG_VERSION $TOPDIR/../../../../packages/graphics/mesa/package.mk | awk -F '=' '{print $2}' | sed 's/["]//g')"
+PKG_MESA_URI="ftp://ftp.freedesktop.org/pub/mesa"
+PKG_MESA_URL="${PKG_MESA_URI}/mesa-$PKG_MESA_VERSION.tar.xz"
+PKG_VERSION="$PKG_MALI_VERSION.$PKG_MALI_RELEASE"
+
+sources() {
+  echo -n "Getting Sources ... "
+
+  if [ ! -d "mesa-$PKG_MESA_VERSION" ]; then
+    ( wget -O- $PKG_MESA_URL | tar -C $TOPDIR -Jxf - ) || exit 1
+  fi
+
+  if [ ! -d "mali-t62x-$PKG_VERSION" ]; then
+    mkdir -p $TOPDIR/malit62x-$PKG_MALI_VERSION
+    ( wget -O- $PKG_MALI_URL | tar -C $TOPDIR/malit62x-$PKG_MALI_VERSION -zxf - ) || exit 1
+  fi
+
+  echo "DONE"
+}
+
+package() {
+  cd $TOPDIR
+
+  if [ -d $PKG_NAME-$PKG_VERSION ]; then
+    echo -n "Cleaning Old Release ... "
+    rm -rf $PKG_NAME-$PKG_VERSION
+    echo "DONE"
+  fi
+
+  echo -n "Copying to Release ... "
+  mkdir -p $PKG_NAME-$PKG_VERSION/usr/include
+    cp -PR mesa-$PKG_MESA_VERSION/include/EGL $PKG_NAME-$PKG_VERSION/usr/include
+    cp -PR mesa-$PKG_MESA_VERSION/include/GLES2 $PKG_NAME-$PKG_VERSION/usr/include
+    cp -PR mesa-$PKG_MESA_VERSION/include/KHR $PKG_NAME-$PKG_VERSION/usr/include
+    cp -PR mesa-$PKG_MESA_VERSION/src/gbm/main/gbm.h $PKG_NAME-$PKG_VERSION/usr/include
+  mkdir -p $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig
+  # use a generic mali-mesa.pc file for all sub libs
+    echo 'prefix=/usr'                    >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'exec_prefix=${prefix}'          >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'libdir=${prefix}/lib'           >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'includedir=${prefix}/include'   >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo ''                               >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'Name: Mali/Mesa PkgConfig'      >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'Description: Mali/Mesa library' >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo "Version: $PKG_MALI_VERSION"     >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'Libs: -L${libdir} -lmali'       >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'Libs.private: -lm -lpthread'    >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+    echo 'Cflags: -I${includedir}'        >> $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/mali-mesa.pc
+
+    for PKGCONFIG in egl gbm glesv2 wayland-egl ; do
+      ln -sfn mali-mesa.pc $PKG_NAME-$PKG_VERSION/usr/lib/pkgconfig/$PKGCONFIG.pc
+    done
+
+  mkdir -p $PKG_NAME-$PKG_VERSION/usr/lib
+    cp -PR malit62x-$PKG_MALI_VERSION/wayland/* $PKG_NAME-$PKG_VERSION/usr/lib/
+    cp -PR malit62x-$PKG_MALI_VERSION/*.txt $PKG_NAME-$PKG_VERSION
+
+  echo "DONE"
+
+  echo -n "Compressing Source ... "
+  tar cJf $PKG_NAME-$PKG_VERSION.tar.xz $PKG_NAME-$PKG_VERSION
+  echo "DONE"
+
+  echo -n "Final Cleanup ... "
+  rm -rf $PKG_NAME-$PKG_VERSION malit62x-$PKG_MALI_VERSION mesa-$PKG_MESA_VERSION
+  echo "DONE"
+}
+
+sources
+package

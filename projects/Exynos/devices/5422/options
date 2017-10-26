@@ -1,0 +1,29 @@
+################################################################################
+# setup device defaults
+################################################################################
+
+  # The TARGET_CPU variable controls which processor should be targeted for
+  # generated code.
+    case $TARGET_ARCH in
+      arm)
+        TARGET_CPU="cortex-a15.cortex-a7"
+        TARGET_FLOAT="hard"
+        TARGET_FPU="neon-fp16"
+        TARGET_FEATURES="32bit"
+        ;;
+    esac
+
+  # Kernel extra targets to build
+    case $UBOOT_SYSTEM in
+      odroid_xu3|odroid_xu4) KERNEL_UBOOT_EXTRA_TARGET+="exynos5422-odroidxu3.dtb" ;;
+    esac
+
+  # OpenGL-ES implementation
+    OPENGLES="mali-t62x"
+
+  # Displayserver to use
+    DISPLAYSERVER="no"
+
+  # set the addon dirs
+    ADDON_PATH="$ADDON_VERSION/$PROJECT/$DEVICE"
+    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"

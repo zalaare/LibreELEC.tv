@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+
+. config/functions
+
+# sector assignments per device
+  case $UBOOT_SYSTEM in
+    odroid_u2|odroid_u3)    BL1="1"; BL2="31"; U_BOOT="63"; TRUST_ZONE="2111" ;;
+    odroid_xu3|odroid_xu4)  BL1="1"; BL2="31"; U_BOOT="63"; TRUST_ZONE="1503" ;;
+  esac

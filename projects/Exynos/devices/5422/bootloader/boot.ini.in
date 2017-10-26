@@ -1,0 +1,75 @@
+#------------------------------------------------------------------------------------------------------
+#
+# boot.ini identification
+#
+#------------------------------------------------------------------------------------------------------
+EXYNOS-UBOOT-CONFIG
+
+# U-Boot Parameters
+setenv initrd_high "0xffffffff"
+setenv fdt_high "0xffffffff"
+
+#------------------------------------------------------------------------------------------------------
+#
+# Boot Specific Stuff
+#
+#------------------------------------------------------------------------------------------------------
+setenv bootrootfs "boot=UUID=@UUID_SYSTEM@ disk=UUID=@UUID_STORAGE@ ro"
+
+#------------------------------------------------------------------------------------------------------
+#
+# Console Setup
+#
+#------------------------------------------------------------------------------------------------------
+setenv console "console=tty0 console=ttySAC2,115200n8"
+
+#------------------------------------------------------------------------------------------------------
+#
+# Video output
+#
+# Setup the video output
+#   Unset variable = automatic
+#
+#   setenv video_output "video=HDMI-A-1:1920x1080M@60" : 1080p (Use connected display's EDID)
+#   setenv video_output "video=HDMI-A-1:1280x720@60"   :  720p (Use connected display's EDID)
+# 
+#   setenv video_output "drm_kms_helper.edid_firmware=edid/1920x1080.bin" : 1080p (Use system EDID)
+#   setenv video_output "drm_kms_helper.edid_firmware=edid/1280x720.bin"  :  720p (Use system EDID)
+#------------------------------------------------------------------------------------------------------
+# setenv video_output "video=HDMI-A-1:1920x1080M@60"
+
+#------------------------------------------------------------------------------------------------------
+#
+# LibreELEC variables
+#
+# Setup the LibreELEC options
+#   valid values are: progress ssh debugging quiet break verbose
+#------------------------------------------------------------------------------------------------------
+setenv libreelec "ssh"
+
+#------------------------------------------------------------------------------------------------------
+#
+# MAC Network Address
+#  Vendor HK uses 00:1e:06
+#
+#------------------------------------------------------------------------------------------------------
+setenv macaddr "00:1e:06:@MAC@"
+
+#------------------------------------------------------------------------------------------------------
+#
+# U-Boot bootcmd command
+#  
+#------------------------------------------------------------------------------------------------------
+setenv kernel  "fatload mmc 0:1 40008000 KERNEL"
+setenv dtb     "fatload mmc 0:1 44000000 exynos5422-odroidxu3.dtb"
+setenv bootcmd "${kernel}; ${dtb}; bootz 40008000 - 44000000"
+
+#------------------------------------------------------------------------------------------------------
+#
+# Kernel boot
+#
+#------------------------------------------------------------------------------------------------------
+setenv bootargs "${console} ${bootrootfs} ${libreelec} r8152.macaddr=${macaddr}"
+
+# Boot the board
+boot

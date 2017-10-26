@@ -1,0 +1,24 @@
+################################################################################
+# setup device defaults
+################################################################################
+
+  # The TARGET_CPU variable controls which processor should be targeted for
+  # generated code.
+    case $TARGET_ARCH in
+      arm)
+        TARGET_CPU="cortex-a9"
+        TARGET_FLOAT="hard"
+        TARGET_FPU="neon-fp16"
+        TARGET_FEATURES="32bit"
+        ;;
+    esac
+
+  # Configuration for u-boot
+    UBOOT_SYSTEM="QUAD4412"
+
+  # Kernel extra targets to build
+    KERNEL_UBOOT_EXTRA_TARGET="exynos4412-odroidu3.dtb"
+
+  # set the addon dirs
+    ADDON_PATH="$ADDON_VERSION/Odroid/QUAD4412"
+    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"

@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+
+# source common
+  . $PROJECT_DIR/$PROJECT/bootloader/common
+
+# exit if blobs are not assigned locations
+  if [ -n "$BL1" -a -n "$BL2" -a -n "$U_BOOT" -a -n "$TRUST_ZONE" ]; then
+    # write blobs to image
+      echo "image: fusing for $PROJECT$DEVICE-$UBOOT_SYSTEM ..."
+      dd if="$RELEASE_DIR/3rdparty/bootloader/bl1.bin" of="$DISK" conv=fsync,notrunc bs=512 seek="$BL1" >"$SAVE_ERROR" 2>&1 || show_error
+      dd if="$RELEASE_DIR/3rdparty/bootloader/bl2.bin" of="$DISK" conv=fsync,notrunc bs=512 seek="$BL2" >"$SAVE_ERROR" 2>&1 || show_error
+      dd if="$RELEASE_DIR/3rdparty/bootloader/u-boot-dtb.bin" of="$DISK" conv=fsync,notrunc bs=512 seek="$U_BOOT" >"$SAVE_ERROR" 2>&1 || show_error
+      dd if="$RELEASE_DIR/3rdparty/bootloader/tzsw.bin" of="$DISK" conv=fsync,notrunc bs=512 seek="$TRUST_ZONE" >"$SAVE_ERROR" 2>&1 || show_error
+  else
+    # let end user know that mkimage was called but no blobs were assigned locations
+      echo -e "WARNING: Not fusing!\n  BL1=$BL1\n  BL2=$BL2\n  U_BOOT=$U_BOOT\n  TRUST_ZONE=$TRUST_ZONE\n Looks like a blob location assignment failed"
+  fi
+
+# generate a new MAC and insert needed UUIDs and MAC into boot.ini
+  find_file_path bootloader/boot.ini.in && \
+  ( MAC=$(openssl rand -hex 3 | sed 's,\(..\),\1:,g;s,.$,,')
+    echo "image: generated MAC=00:1e:06:$MAC..."
+    sed -e "s/@MAC@/${MAC}/" \
+        -e "s/@UUID_SYSTEM@/$UUID_SYSTEM/" \
+        -e "s/@UUID_STORAGE@/$UUID_STORAGE/" \
+      $FOUND_PATH > \
+        $RELEASE_DIR/3rdparty/bootloader/boot.ini
+    mcopy $RELEASE_DIR/3rdparty/bootloader/boot.ini ::/boot.ini )

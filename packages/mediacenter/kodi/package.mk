@@ -201,6 +201,11 @@ if [ ! "$KODIPLAYER_DRIVER" = default ]; then
     CXXFLAGS="$CXXFLAGS -DMESA_EGL_NO_X11_HEADERS"
   elif [ "$KODIPLAYER_DRIVER" = libamcodec ]; then
     KODI_PLAYER="-DCORE_PLATFORM_NAME=aml"
+  elif [ "$KODIPLAYER_DRIVER" = exynos-mfc ]; then
+    KODI_PLAYER="-DENABLE_MFC=ON"
+    PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET/ $KODIPLAYER_DRIVER/}"
+    # EGL_LIBS="-L$SYSROOT_PREFIX/usr/lib -lEGL"
+    # EGL_CFLAGS="-I$SYSROOT_PREFIX/usr/include"
   fi
 fi
 

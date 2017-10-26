@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+
+TOPDIR=$(pwd)
+GIT_FLAGS="${GIT_FLAGS:=-q}"
+GIT_REPO="https://github.com/hardkernel/u-boot"
+GIT_NAME="u-boot.git"
+PKG_NAME="u-boot"
+
+usage() {
+  echo "$0 XU3|U2"
+  exit 1
+}
+
+sources() {
+  echo -n "Getting Sources ... "
+
+  cd $TOPDIR
+
+  if [ ! -d $GIT_NAME ]; then
+    git clone $GIT_FLAGS $GIT_REPO $GIT_NAME
+  fi
+
+  cd $TOPDIR/$GIT_NAME
+
+  git reset $GIT_FLAGS --hard
+  git clean $GIT_FLAGS -fd
+  git pull $GIT_FLAGS
+
+  git checkout $GIT_FLAGS -m $BRANCH
+
+  VERSION="$PKG_VERSION~$DEVICE+$(git rev-parse --short HEAD)"
+
+  echo "DONE"
+}
+
+package() {
+  cd $TOPDIR
+
+  if [ -d $PKG_NAME-$VERSION ]; then
+    echo -n "Cleaning Old Release ... "
+    rm -rf $PKG_NAME-$VERSION
+    echo "DONE"
+  fi
+
+  echo -n "Copying GIT to Release ... "
+  mkdir -p $PKG_NAME-$VERSION
+  cp -ar $GIT_NAME/* $PKG_NAME-$VERSION
+  echo "DONE"
+
+  echo -n "Compressing Source ... "
+  tar cJf $PKG_NAME-$VERSION.tar.xz $PKG_NAME-$VERSION
+  echo "DONE"
+
+  echo -n "Final Cleanup ... "
+  rm -rf $PKG_NAME-$VERSION
+  echo "DONE"
+}
+
+if [ -z $1 ]; then
+  usage
+else
+  case $1 in
+    U2|u2|U3|u3) BRANCH="odroid-v2010.12"    ; PKG_VERSION="2010.12" ; DEVICE="odroidu2"  ;;
+    XU3|xu3)     BRANCH="odroidxu4-v2017.05" ; PKG_VERSION="2017.05" ; DEVICE="odroidxu3" ;;
+    *) usage ;;
+  esac
+  sources $1 $2
+  package $1
+fi
