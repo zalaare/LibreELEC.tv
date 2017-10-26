@@ -34,7 +34,6 @@ get_graphicdrivers
 
 PKG_DRM_CONFIG="-Dnouveau=false \
                 -Domap=false \
-                -Dexynos=false \
                 -Dtegra=false"
 
 listcontains "$GRAPHIC_DRIVERS" "(i915|i965)" &&
@@ -57,6 +56,9 @@ listcontains "$GRAPHIC_DRIVERS" "freedreno" &&
 
 listcontains "$GRAPHIC_DRIVERS" "etnaviv" &&
   PKG_DRM_CONFIG+=" -Detnaviv=true" || PKG_DRM_CONFIG+=" -Detnaviv=false"
+
+listcontains "$GRAPHIC_DRIVERS" "exynos" &&
+  PKG_DRM_CONFIG+=" -Dexynos=true" || PKG_DRM_CONFIG+=" -Dexynos=false"
 
 PKG_MESON_OPTS_TARGET="-Dlibkms=false \
                        $PKG_DRM_CONFIG \
